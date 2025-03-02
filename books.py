@@ -43,3 +43,19 @@ async def create_book(new_book=Body()):
   books.append(new_book)
   return JSONResponse(new_book, status_code=201)
 
+@app.put("/books/{book_id}")
+async def update_book(book_id: int, new_book=Body()):
+  for i in range(len(books)):
+    if books[i].get("id") == book_id:
+      books[i] = new_book
+      break
+  return JSONResponse(new_book, status_code=200)
+
+@app.delete("/books/{book_id}")
+async def delete_book(book_id: int):
+  for i in range(len(books)):
+    if books[i].get("id") == book_id:
+      books.pop(i)
+      break
+
+
