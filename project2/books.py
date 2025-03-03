@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import FastAPI, Body
+from fastapi import FastAPI, Body, Path, Query
 from pydantic import BaseModel, Field
 from datetime import datetime
 from random import random
@@ -23,7 +23,7 @@ class BookRequest(BaseModel):
     author: str = Field(min_length=3, max_length=20)
     category: str = Field(min_length=1, max_length=20)
     rating: float = Field(gt=0, lt=11)
-    published_date: int = Field(description="Default: Current year", default=datetime.now().year)
+    published_date: int = Field(description="Default: Current year", default=datetime.now().year, gt=1999, lt=2026)
 
     model_config = {
       "json_schema_extra": {
@@ -52,21 +52,21 @@ async def read_all_books():
 
 
 @app.get("/books/{book_id}")
-async def read_book(book_id: int):
+async def read_book(book_id: int = Path(gt=0)):
   for book in books:
     if book.id == book_id:
       return book
 
-@app.get("/books/category/{book_category}")
-async def read_books_by_category(book_category: str):
+@app.get("/books/category/")
+async def read_books_by_category(book_category: str = Query(min_length=1, max_length=20)):
   _books: list[Book] = []
   for book in books:
     if book.category.casefold() == book_category.casefold():
       _books.append(book)
   return _books
 
-@app.get("/books/publish/{book_published_date}")
-async def read_books_by_publish_year(book_published_date: int):
+@app.get("/books/publish/")
+async def read_books_by_publish_year(book_published_date: int = Query(gt=1999, lt=2026)):
   _books: list[Book] = []
   for book in books:
     if book.published_date == book_published_date:
@@ -84,7 +84,7 @@ def generate_book_id():
 
 
 @app.put("/books/{book_id}")
-async def update_book(book_id: int, book: BookRequest):
+async def update_book(book: BookRequest, book_id: int = Path(gt=0)):
   for i in range(len(books)):
     if books[i].id == book_id:
       updated_book_data = {"id": books[i].id, **book.model_dump(exclude={"id"})}
