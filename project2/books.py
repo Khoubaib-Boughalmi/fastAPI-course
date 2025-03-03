@@ -46,12 +46,26 @@ async def read_all_books():
     return books
 
 
+@app.get("/books/{book_id}")
+async def read_book(book_id: int):
+  for book in books:
+    if book.id == book_id:
+      return book
+
+@app.get("/books/")
+async def read_books_by_category(book_category: str):
+  _books: list[Book] = []
+  for book in books:
+    if book.category.casefold() == book_category.casefold():
+      _books.append(book)
+  return _books
+
 @app.post("/books")
 async def create_book(book_request: BookRequest):
     new_book = Book(**book_request.model_dump(exclude={"id"}), id=generate_book_id())
     books.append(new_book)
     return new_book
 
-
 def generate_book_id():
     return 1 if len(books) == 0 else books[-1].id + 1
+
