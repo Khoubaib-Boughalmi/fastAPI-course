@@ -1,10 +1,14 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+import logging
 
 SQL_DATABASE_URL = "sqlite:///./project3.db" # File-based
 
 engine = create_engine(SQL_DATABASE_URL, connect_args={"check_same_thread": False})
+
+logging.basicConfig()
+logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 sessionLocal = sessionmaker(autoflush=False, autocommit=False, bind=engine) # will be instantiated to create a live db connection: db = sessionLocal()
 
