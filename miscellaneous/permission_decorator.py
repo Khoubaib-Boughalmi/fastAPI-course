@@ -1,8 +1,8 @@
-from typing import Optional
-from fastapi import Depends, FastAPI, HTTPException, Header, Request
-from functools import wraps
-
 import jwt
+from typing import Optional
+from functools import wraps
+from fastapi import Depends, FastAPI, HTTPException, Header
+
 app = FastAPI()
 
 
@@ -32,9 +32,9 @@ def jwt_decode_token(token: str) -> dict:
 	except jwt.InvalidTokenError:
 		raise HTTPException(status_code=403, detail="Invalid token.")     
 	except Exception as e:
-		raise HTTPException(status_code=403, detail=e)     
+		raise HTTPException(status_code=403, detail=e)
 		
-def extract_user_permission(authorization: Optional[str] = Header()) -> str:
+def extract_user_permission(authorization: Optional[str]= Header()) -> str:
 	"""
 		This function can be used to extract user role from jwt
  	"""
@@ -46,8 +46,7 @@ def extract_user_permission(authorization: Optional[str] = Header()) -> str:
 		return decoded_token
 	except:
 		return "guest"
-	
- 
+
 @app.get("/admin")
 @require_permission("admin")
 async def get_admin_information(user_role: str = Depends(extract_user_permission)):     
