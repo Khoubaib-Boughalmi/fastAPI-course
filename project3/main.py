@@ -24,7 +24,6 @@ async def db_session_middleware(request: Request, call_next):
 	try:
 		response = await call_next(request)
 		if request.method not in ["GET"]:
-			db.flush()
 			db.commit()
 	except:
 		print("rollback")
