@@ -61,3 +61,25 @@ async def read_todo(db: Session = Depends(get_db), todo_id: int = Path(gt=0)):
 async def create_todo(todo_request: TodoRequest, db: Session= Depends(get_db)):
 	todo = models.Todos(**todo_request.model_dump())
 	db.add(todo)
+ 
+
+@app.put("/todos/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def update_todo(todo_request: TodoRequest, db: Session= Depends(get_db), todo_id: int= Path(gt=0)):
+	print(todo_id)
+	todo_model = db.query(models.Todos).filter(models.Todos.id == todo_id).first()
+	if todo_model is None:
+		raise HTTPException(status_code=404, detail=f"No todo with id equals {todo_id}")
+	todo_model.title = todo_request.title
+	todo_model.description = todo_request.description
+	todo_model.priority = todo_request.priority
+	todo_model.complete = todo_request.complete
+	todo_model.priority = todo_request.priority
+	
+	db.add(todo_model)
+ 
+@app.delete("/todos/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_todo(db: Session= Depends(get_db), todo_id: int= Path(gt=0)):
+	todo_model = db.query(models.Todos).filter(models.Todos.id == todo_id).first()
+	if todo_model is None:
+		raise HTTPException(status_code=404, detail=f"No todo with id equals {todo_id}")
+	db.delete(todo_model)
