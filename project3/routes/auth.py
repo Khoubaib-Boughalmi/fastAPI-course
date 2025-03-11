@@ -1,6 +1,6 @@
 from models import User
 from middlewares.db_session import get_db
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from fastapi.routing import APIRouter
 from pydantic import BaseModel, Field, EmailStr 
 from starlette import status
@@ -10,6 +10,15 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter()
 ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def check_valid_username_password(db: Session, password: str, username: str) -> bool:
+	user = db.query(User).filter(User.username == username).first()
+	if not user:
+		return False
+	try:
+		return ctx.verify(password, user.hashed_password)
+	except:
+		return False
 
 class CreateUserRequest(BaseModel):
 	email: EmailStr
@@ -32,5 +41,8 @@ async def create_user(user_request: CreateUserRequest, db: Session = Depends(get
 
 @router.post("/token", status_code=status.HTTP_202_ACCEPTED)
 async def login_access_token(form_data = Depends(OAuth2PasswordRequestForm),
-                             db: Session = Depends(get_db)):
+							 db: Session = Depends(get_db)):
+	
+	if not check_valid_username_password(db, form_data.password, form_data.username):
+		raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"message": "Wrong Email or password"})
 	return "Token"
