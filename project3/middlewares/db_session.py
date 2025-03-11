@@ -17,11 +17,10 @@ async def db_session_middleware(request: Request, call_next):
 		if request.method not in ["GET"]:
 			db.commit()
 	except:
-		print("rollback")
+		print("Something went wrong: Rollback")
 		db.rollback()
 		raise
 	finally:
-		print("close")
 		db.close()
 	return response
 
