@@ -6,7 +6,10 @@ from starlette import status
 from middlewares.db_session import get_db
 from models import Todo
 
-router = APIRouter()
+router = APIRouter(
+	prefix="/todo",
+	tags= ["Todo"]
+)
 
 class TodoRequest(BaseModel):
 	title: str = Field(min_length=5, max_length=20)
@@ -15,25 +18,25 @@ class TodoRequest(BaseModel):
 	complete: bool
 
 
-@router.get("/todos", status_code=status.HTTP_200_OK)
+@router.get("/", status_code=status.HTTP_200_OK)
 async def read_all_todos(db: Session = Depends(get_db)):
 	return db.query(Todo).all()
 
 
-@router.get("/todos/{todo_id}", status_code=status.HTTP_200_OK)
+@router.get("/{todo_id}", status_code=status.HTTP_200_OK)
 async def read_todo(db: Session = Depends(get_db), todo_id: int = Path(gt=0)):
 	todo_model = db.query(Todo).filter(Todo.id == todo_id).first()
 	if todo_model is None:
 		raise HTTPException(status_code=404, detail=f"No todo with id equals {todo_id}")
 	return todo_model
 
-@router.post("/todos", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_todo(todo_request: TodoRequest, db: Session= Depends(get_db)):
 	todo = Todo(**todo_request.model_dump())
 	db.add(todo)
  
 
-@router.put("/todos/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.put("/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def update_todo(todo_request: TodoRequest, db: Session= Depends(get_db), todo_id: int= Path(gt=0)):
 	print(todo_id)
 	todo_model = db.query(Todo).filter(Todo.id == todo_id).first()
@@ -47,7 +50,7 @@ async def update_todo(todo_request: TodoRequest, db: Session= Depends(get_db), t
 	
 	db.add(todo_model)
  
-@router.delete("/todos/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_todo(db: Session= Depends(get_db), todo_id: int= Path(gt=0)):
 	todo_model = db.query(Todo).filter(Todo.id == todo_id).first()
 	if todo_model is None:
