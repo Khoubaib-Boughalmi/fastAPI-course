@@ -1,6 +1,5 @@
-from fastapi import FastAPI, Request
-from database import engine, sessionLocal
-from sqlalchemy.orm import Session
+from fastapi import FastAPI
+from database import engine
 from routes import auth, todos
 import models
 from middlewares.db_session import db_session_middleware
